@@ -16,7 +16,7 @@ InstallDir "$PROGRAMFILES\GMB-View"
 
 OutFile "GMB-View-${TAG}.exe"
 
-!define MUI_ICON "GetReviews\logo.jpg"
+!define MUI_ICON "GetReviews\logo.ico"
 !define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\win-uninstall.ico"
 
 Var STARTMENU_FOLDER
