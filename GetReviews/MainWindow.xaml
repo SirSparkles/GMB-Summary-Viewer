@@ -1,0 +1,131 @@
+﻿<Window x:Class="GetReviews.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GetReviews"
+        mc:Ignorable="d"
+        Title="Google My Business - Review and Questions" Height="Auto" Width="Auto" d:DesignWidth="893.431"
+        Icon="./logo.jpg">
+    <Window.Resources>
+        <local:UrlConverter x:Key="UrlConverter"/>
+        <local:DlReviews x:Key="Reviews" />
+        <CollectionViewSource x:Key="CvsReviews" Source="{StaticResource Reviews}" 
+                          Filter="ReviewCVS_Filter">
+        </CollectionViewSource>
+        <local:DlQuestions x:Key="Questions" />
+        <CollectionViewSource x:Key="CvsQuestions" Source="{StaticResource Questions}" 
+                          Filter="QuestionCVS_Filter"/>
+    </Window.Resources>
+    <Grid>
+
+        <TabControl Grid.ColumnSpan="1">
+            <TabItem Header="Operation">
+                <Grid Background="#FFE5E5E5">
+                    <Button Content="Login" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click"/>
+                    <ListBox x:Name="LbAccounts" HorizontalAlignment="Left" Margin="214,10,0,10" Width="189"/>
+                    <ListBox x:Name="LbStores" HorizontalAlignment="Left" Margin="408,10,0,10" Width="277"/>
+                    <TextBox x:Name="TxtUpdates" Margin="690,10,0,10" TextWrapping="Wrap" Text=""/>
+                    <Label x:Name="LblUserName" Content="&lt;Not Connected&gt;" HorizontalAlignment="Left" Margin="10,35,0,0" VerticalAlignment="Top" Width="199"/>
+                    <Image HorizontalAlignment="Left" Height="100" Margin="31,90,0,0" VerticalAlignment="Top" Width="100"/>
+                    <Image x:Name="ImgProfilePic" Height="100" Margin="10,66,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="199"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Questions">
+                <Grid>
+                    <Label Content="Timeframe" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="114" Height="29"/>
+                    <ComboBox x:Name="CmbQuestTf" Width="120" Margin="83,10,0,0" HorizontalAlignment="Left" Height="20" VerticalAlignment="Top" SelectionChanged="RefilterCb">
+                        <ComboBoxItem Content="All"/>
+                        <ComboBoxItem Content="Last Week"/>
+                        <ComboBoxItem Content="Last 30 days"/>
+                        <ComboBoxItem Content="Last 90 days"/>
+                        <ComboBoxItem Content="Last Year"/>
+                    </ComboBox>
+                    <CheckBox x:Name="CbQuestNoResponse" Content="Just No Response" Margin="233,15,526,446" Checked="Refilter" Unchecked="Refilter"/>
+
+                    <DataGrid x:Name="GrdQuestion" Margin="10,44,10,10" ItemsSource="{Binding Source={StaticResource CvsQuestions}}" CanUserAddRows="False" AutoGenerateColumns="False" IsReadOnly="True">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Account" Binding="{Binding AccountName}"/>
+                            <DataGridTextColumn Header="Store" Binding="{Binding LocationName}"/>
+                            <DataGridTextColumn Header="Date" Binding="{Binding CreateTime}"/>
+                            <DataGridTextColumn Header="Votes" Binding="{Binding UpvoteCount}"/>
+                            <DataGridTextColumn Header="Responses" Binding="{Binding TotalAnswerCount}" >
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style>
+                                        <Setter Property="TextBlock.TextWrapping" Value="Wrap" />
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridHyperlinkColumn Header="Link" Binding="{Binding Url}" ContentBinding="{Binding Url, Converter={StaticResource UrlConverter}}">
+                                <DataGridHyperlinkColumn.ElementStyle>
+                                    <Style>
+                                        <EventSetter Event="Hyperlink.Click" Handler="WebPageClick"/>
+                                    </Style>
+                                </DataGridHyperlinkColumn.ElementStyle>
+                            </DataGridHyperlinkColumn>
+                            <DataGridTextColumn Header="Question" MinWidth="100" Width="4*" Binding="{Binding Text}" >
+                            <DataGridTextColumn.ElementStyle>
+                                <Style>
+                                    <Setter Property="TextBlock.TextWrapping" Value="Wrap" />
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                </Grid>
+            </TabItem>
+            <TabItem Header="Reviews">
+                <Grid>
+                    <Label Content="Timeframe" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="114" Height="29"/>
+                    <ComboBox x:Name="CmbRevTf" Width="120" Margin="83,10,0,0" HorizontalAlignment="Left" Height="20" VerticalAlignment="Top" SelectionChanged="RefilterCb">
+                        <ComboBoxItem Content="All"/>
+                        <ComboBoxItem Content="Last Week"/>
+                        <ComboBoxItem Content="Last 30 days"/>
+                        <ComboBoxItem Content="Last 90 days"/>
+                        <ComboBoxItem Content="Last Year"/>
+                    </ComboBox>
+                    <CheckBox x:Name="CbReviewNoResponse" Content="Just No Response" Margin="233,15,526,446" Checked="Refilter" Unchecked="Refilter"/>
+                    <CheckBox x:Name="CbReviewNoComment" Content="Exclude With No Comment" Margin="456,15,243,446" Checked="Refilter" Unchecked="Refilter"/>
+
+                    <DataGrid x:Name="GrdReview" Margin="10,44,10,10"  ItemsSource="{Binding Source={StaticResource CvsReviews}}" CanUserAddRows="False" AutoGenerateColumns="False" IsReadOnly="True">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Account" Binding="{Binding AccountName}"/>
+                            <DataGridTextColumn Header="Store" Binding="{Binding LocationName}"/>
+                            <DataGridTextColumn Header="Date" Binding="{Binding CreateTime}"/>
+                            <DataGridTextColumn Header="Rating" Binding="{Binding StarRating}"/>
+                            <DataGridHyperlinkColumn Header="Link" Binding="{Binding Url}" ContentBinding="{Binding Url, Converter={StaticResource UrlConverter}}">
+                                <DataGridHyperlinkColumn.ElementStyle>
+                                    <Style>
+                                        <EventSetter Event="Hyperlink.Click" Handler="WebPageClick"/>
+                                    </Style>
+                                </DataGridHyperlinkColumn.ElementStyle>
+                            </DataGridHyperlinkColumn>
+
+
+                            <DataGridTextColumn Header="Comment" MinWidth="100" Width="4*" Binding="{Binding Comment}">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style>
+                                    <Setter Property="TextBlock.TextWrapping" Value="Wrap" />
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Response" MinWidth="100" Width="4*" Binding="{Binding Response}">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style>
+                                    <Setter Property="TextBlock.TextWrapping" Value="Wrap" />
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Log">
+                <Grid Background="#FFE5E5E5">
+                    <TextBox x:Name="TxtLog" Margin="0,0,0,0" TextWrapping="Wrap" Text=""/>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>
