@@ -48,9 +48,15 @@ Section "Install"
 
     Delete "$INSTDIR\Ionic.Utils.Zip.dll" ; Remove old dependency
 
-    File "GMB-View\bin\Release\TVRename.exe"
+    File "GMB-View\bin\Release\GetReviews.exe"
     File "GMB-View\bin\Release\Newtonsoft.Json.dll"
-
+    File "GMB-View\bin\Release\Google.Apis.Auth.dll"
+    File "GMB-View\bin\Release\Google.Apis.Auth.PlatformServices.dll"
+    File "GMB-View\bin\Release\Google.Apis.Core.dll"
+    File "GMB-View\bin\Release\Google.Apis.dll"
+    File "GMB-View\bin\Release\Google.Apis.PlatformServices.dll"
+    File "GMB-View\bin\Release\GetReviews.exe.config"
+    
     WriteUninstaller "$INSTDIR\Uninstall.exe"
 
     !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
@@ -74,8 +80,15 @@ Section "Install"
 SectionEnd
 
 Section "Uninstall"
-    Delete "$INSTDIR\GMB-View.exe"
+    Delete "$INSTDIR\GetReviews.exe"
+    Delete "$INSTDIR\GetReviews.exe.config"
     Delete "$INSTDIR\Newtonsoft.Json.dll"
+    
+    Delete "$INSTDIR\Google.Apis.Auth.dll"
+    Delete "$INSTDIR\Google.Apis.Auth.PlatformServices.dll"
+    Delete "$INSTDIR\Google.Apis.Core.dll"
+    Delete "$INSTDIR\Google.Apis.dll"
+    Delete "$INSTDIR\Google.Apis.PlatformServices.dll"
 
     RmDir "$INSTDIR"
 
