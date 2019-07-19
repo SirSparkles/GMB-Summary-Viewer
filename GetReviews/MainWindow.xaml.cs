@@ -34,7 +34,7 @@ namespace GetReviews
         // client configuration
         const string AuthorizationEndpoint = "https://accounts.google.com/o/oauth2/v2/auth";
         const string UserInfoEndpoint = "https://www.googleapis.com/oauth2/v3/userinfo";
-        const string tokenRequestUri = "https://www.googleapis.com/oauth2/v4/token";
+        const string TokenRequestUri = "https://www.googleapis.com/oauth2/v4/token";
 
         // The scope of Google My Business API
         const string MybusinessServiceScope = "https://www.googleapis.com/auth/business.manage";
@@ -47,20 +47,20 @@ namespace GetReviews
 
         private async void Button_Click(object sender, RoutedEventArgs e)
         {
-            await ReloadAsync(this.Name).ConfigureAwait(false); 
+            await ReloadAsync(Name).ConfigureAwait(false);
         }
 
         private async Task ReloadAsync(string appName)
         {
             ClientSecrets secrets = GetClientInformation("client_secrets.json");
 
-            (bool carryon,string username) = await Connect(secrets).ConfigureAwait(false);
+            (bool carryon, string username) = await Connect(secrets).ConfigureAwait(false);
             if (!carryon) return;
 
-            MyBusinessService service = GetBusinessService(username,secrets,appName);
+            MyBusinessService service = GetBusinessService(username, secrets, appName);
 
-            ConcurrentBag<DlQuestion> allQuestions = new ConcurrentBag< DlQuestion>();
-            ConcurrentBag< DlReview> allReviews = new ConcurrentBag< DlReview>();
+            ConcurrentBag<DlQuestion> allQuestions = new ConcurrentBag<DlQuestion>();
+            ConcurrentBag<DlReview> allReviews = new ConcurrentBag<DlReview>();
             ConcurrentDictionary<string, Location> allLocations = new ConcurrentDictionary<string, Location>();
 
             await Dispatcher.InvokeAsync(() =>
@@ -69,40 +69,41 @@ namespace GetReviews
                 LbStores.Items.Clear();
             });
 
-            List<Account> accountsFromService = await GetAccountsFromService(service); 
+            List<Account> accountsFromService = await GetAccountsFromService(service);
 
             foreach (Account account in accountsFromService)
             {
-                await Dispatcher.InvokeAsync(() =>
-                {
-                    LbAccounts.Items.Add(account.AccountName);
-                });
+                await Dispatcher.InvokeAsync(() => { LbAccounts.Items.Add(account.AccountName); });
 
                 // Creates and executes the request.
                 List<Location> downloadedLocations = GetStoresForAccount(service, account);
 
-                await Task.WhenAll(downloadedLocations.Select(selectedLocation => ProcessLocation(service, account, selectedLocation, allQuestions, allReviews, allLocations))).ConfigureAwait(false);
+                await Task.WhenAll(downloadedLocations.Select(selectedLocation =>
+                        ProcessLocation(service, account, selectedLocation, allQuestions, allReviews, allLocations)))
+                    .ConfigureAwait(false);
             }
 
             await Dispatcher.InvokeAsync(() =>
             {
                 DlQuestions questions = (DlQuestions) Resources["Questions"];
                 questions.Clear();
-                foreach (var x in allQuestions)
+                foreach (DlQuestion x in allQuestions)
                 {
                     questions.Add(x);
                 }
 
                 DlReviews reviews = (DlReviews) Resources["Reviews"];
                 reviews.Clear();
-                foreach (var x in allReviews)
+                foreach (DlReview x in allReviews)
                 {
                     reviews.Add(x);
                 }
             });
         }
 
-        private async Task ProcessLocation(MyBusinessService service,Account account,Location selectedLocation, ConcurrentBag<DlQuestion> allQuestions, ConcurrentBag<DlReview> allReviews, ConcurrentDictionary<string, Location> allLocations)
+        private async Task ProcessLocation(MyBusinessService service, Account account, Location selectedLocation,
+            ConcurrentBag<DlQuestion> allQuestions, ConcurrentBag<DlReview> allReviews,
+            ConcurrentDictionary<string, Location> allLocations)
         {
             if (allLocations.TryGetValue(selectedLocation.StoreCode, out Location _))
             {
@@ -113,10 +114,7 @@ namespace GetReviews
                 allLocations.TryAdd(selectedLocation.StoreCode, selectedLocation);
                 await Output($"Processing {selectedLocation.StoreCode}...");
 
-                await Dispatcher.InvokeAsync(() =>
-                {
-                    LbStores.Items.Add(selectedLocation.StoreCode);
-                });
+                await Dispatcher.InvokeAsync(() => { LbStores.Items.Add(selectedLocation.StoreCode); });
 
                 await LookForUnImplementedUpdates(service, selectedLocation);
 
@@ -124,12 +122,14 @@ namespace GetReviews
                 {
                     allQuestions.Add(new DlQuestion(account, selectedLocation, q));
                 }
+
                 await Output($"Downloaded questions for {selectedLocation.LocationName}({selectedLocation.StoreCode})");
 
                 foreach (Review q in await GetStoreReviews(service, selectedLocation))
                 {
                     allReviews.Add(new DlReview(account, selectedLocation, q));
                 }
+
                 await Output($"Downloaded reviews for {selectedLocation.LocationName}({selectedLocation.StoreCode})");
             }
         }
@@ -140,13 +140,15 @@ namespace GetReviews
 
             if (!string.IsNullOrWhiteSpace(updates))
             {
-                await AddUserNotification($"Google identified that {selectedLocation.LocationName}({selectedLocation.StoreCode}) has updates to be actioned ({updates})");
+                await AddUserNotification(
+                    $"Google identified that {selectedLocation.LocationName}({selectedLocation.StoreCode}) has updates to be actioned ({updates})");
             }
         }
 
         private async Task<string> GetUpdateStringForStore(MyBusinessService service, Location store)
         {
-            AccountsResource.LocationsResource.GetGoogleUpdatedRequest updatesRequest = service.Accounts.Locations.GetGoogleUpdated(store.Name);
+            AccountsResource.LocationsResource.GetGoogleUpdatedRequest updatesRequest =
+                service.Accounts.Locations.GetGoogleUpdated(store.Name);
 
             GoogleUpdatedLocation updates = null;
 
@@ -154,7 +156,7 @@ namespace GetReviews
             {
                 try
                 {
-                    updates = await updatesRequest.ExecuteAsync(); 
+                    updates = await updatesRequest.ExecuteAsync();
                 }
                 catch (TaskCanceledException)
                 {
@@ -165,10 +167,9 @@ namespace GetReviews
                     }
                     catch (TaskCanceledException ex2)
                     {
-                        await AddUserNotification($"PERMENANTLY FAILED to get update records for {store.StoreCode} {ex2.Message}");
-
+                        await AddUserNotification(
+                            $"PERMENANTLY FAILED to get update records for {store.StoreCode} {ex2.Message}");
                     }
-
                 }
             }
             catch (Google.GoogleApiException ex)
@@ -182,10 +183,10 @@ namespace GetReviews
         private async Task<List<Review>> GetStoreReviews(MyBusinessService service, Location store)
         {
             List<Review> reviews = new List<Review>();
-            var selectedLocationReviews = service.Accounts.Locations.Reviews.List(store.Name);
+            AccountsResource.LocationsResource.ReviewsResource.ListRequest selectedLocationReviews = service.Accounts.Locations.Reviews.List(store.Name);
             try
             {
-                var reviewResult = selectedLocationReviews.Execute();
+                ListReviewsResponse reviewResult = selectedLocationReviews.Execute();
                 if (reviewResult != null)
                 {
                     if (reviewResult.Reviews != null)
@@ -206,7 +207,6 @@ namespace GetReviews
                     {
                         await Output($"No reviews for {store.StoreCode}...");
                     }
-
                 }
             }
             catch (Exception e)
@@ -220,7 +220,7 @@ namespace GetReviews
         private async Task<List<Question>> GetStoreQuestions(MyBusinessService service, Location store)
         {
             List<Question> questions = new List<Question>();
-            var selectedLocationQuestions = service.Accounts.Locations.Questions.List(store.Name);
+            AccountsResource.LocationsResource.QuestionsResource.ListRequest selectedLocationQuestions = service.Accounts.Locations.Questions.List(store.Name);
             try
             {
                 try
@@ -228,18 +228,17 @@ namespace GetReviews
                     await GetStoreQuestions(store, questions, selectedLocationQuestions);
                 }
                 catch (TaskCanceledException)
-            {
-                await Output($"Failed to get questions for {store.StoreCode}, retrying");
+                {
+                    await Output($"Failed to get questions for {store.StoreCode}, retrying");
                     try
                     {
                         await GetStoreQuestions(store, questions, selectedLocationQuestions);
                     }
                     catch (TaskCanceledException ex2)
                     {
-                        await AddUserNotification($"PERMENANTLY FAILED to get questions for {store.StoreCode} {ex2.Message}");
-
+                        await AddUserNotification(
+                            $"PERMENANTLY FAILED to get questions for {store.StoreCode} {ex2.Message}");
                     }
-
                 }
             }
             catch (Google.GoogleApiException ex)
@@ -250,9 +249,10 @@ namespace GetReviews
             return questions;
         }
 
-        private async Task GetStoreQuestions(Location store, List<Question> questions, AccountsResource.LocationsResource.QuestionsResource.ListRequest selectedLocationQuestions)
+        private async Task GetStoreQuestions(Location store, List<Question> questions,
+            AccountsResource.LocationsResource.QuestionsResource.ListRequest selectedLocationQuestions)
         {
-            var questionResult = selectedLocationQuestions.Execute();
+            ListQuestionsResponse questionResult = selectedLocationQuestions.Execute();
             if (questionResult != null)
             {
                 if (questionResult.Questions != null)
@@ -332,14 +332,13 @@ namespace GetReviews
 
         private MyBusinessService GetBusinessService(string user, ClientSecrets secrets, string name)
         {
-
-            UserCredential credential= GoogleWebAuthorizationBroker.AuthorizeAsync(
-                    secrets,
-                    new[] { MybusinessServiceScope },
-                    user,
-                    CancellationToken.None,
-                    new FileDataStore("Mybusiness.Auth.Store")
-                    ).Result;
+            UserCredential credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
+                secrets,
+                new[] {MybusinessServiceScope},
+                user,
+                CancellationToken.None,
+                new FileDataStore("Mybusiness.Auth.Store")
+            ).Result;
 
             // Creates the service.
             MyBusinessService service = new MyBusinessService(new BaseClientService.Initializer()
@@ -350,7 +349,7 @@ namespace GetReviews
             return service;
         }
 
-        private async Task<(bool,string)> Connect(ClientSecrets secrets)
+        private async Task<(bool, string)> Connect(ClientSecrets secrets)
         {
             // Generates state and PKCE values.
             string state = RandomDataBase64Url(32);
@@ -399,7 +398,7 @@ namespace GetReviews
             if (context.Request.QueryString.Get("error") != null)
             {
                 await Output($"OAuth authorization error: {context.Request.QueryString.Get("error")}.");
-                return (false,string.Empty);
+                return (false, string.Empty);
             }
 
             if (context.Request.QueryString.Get("code") == null
@@ -424,11 +423,12 @@ namespace GetReviews
             await Output("Authorization code: " + code);
 
             // Starts the code exchange at the Token Endpoint.
-            string username = await PerformCodeExchange(code, codeVerifier, redirectUri,secrets);
+            string username = await PerformCodeExchange(code, codeVerifier, redirectUri, secrets);
             return (true, username);
         }
 
-        async Task<string> PerformCodeExchange(string code, string codeVerifier, string redirectUri, ClientSecrets secrets)
+        async Task<string> PerformCodeExchange(string code, string codeVerifier, string redirectUri,
+            ClientSecrets secrets)
         {
             await Output("Exchanging code for tokens...");
 
@@ -436,7 +436,7 @@ namespace GetReviews
             string tokenRequestBody =
                 $"code={code}&redirect_uri={Uri.EscapeDataString(redirectUri)}&client_id={secrets.ClientId}&code_verifier={codeVerifier}&client_secret={secrets.ClientSecret}&scope=&grant_type=authorization_code";
             // sends the request
-            HttpWebRequest tokenRequest = (HttpWebRequest) WebRequest.Create(tokenRequestUri);
+            HttpWebRequest tokenRequest = (HttpWebRequest) WebRequest.Create(TokenRequestUri);
             tokenRequest.Method = "POST";
             tokenRequest.ContentType = "application/x-www-form-urlencoded";
             tokenRequest.Accept = "Accept=text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
@@ -495,20 +495,21 @@ namespace GetReviews
 
         private static ClientSecrets GetClientInformation(string secretFilename)
         {
-            ClientSecrets secretsFile =null;
+            ClientSecrets secretsFile = null;
             try
             {
-                using (var stream = new FileStream(secretFilename, FileMode.Open, FileAccess.Read))
+                using (FileStream stream = new FileStream(secretFilename, FileMode.Open, FileAccess.Read))
                 {
                     secretsFile = GoogleClientSecrets.Load(stream).Secrets;
                 }
             }
             catch (FileNotFoundException fnfe)
             {
-                MessageBox.Show($"Cannot find secrets file at location: {fnfe.Message}", "Secret connection details not found", MessageBoxButton.OK,MessageBoxImage.Error);
+                MessageBox.Show($"Cannot find secrets file at location: {fnfe.Message}",
+                    "Secret connection details not found", MessageBoxButton.OK, MessageBoxImage.Error);
                 Environment.Exit(1);
             }
-            //todo - succintly deal with FileNotFound
+
             return secretsFile;
         }
 
@@ -628,12 +629,12 @@ namespace GetReviews
         private void QuestionCVS_Filter(object sender, FilterEventArgs e)
         {
             if (e.Item is DlQuestion t)
-            // If filter is turned on, filter completed items.
+                // If filter is turned on, filter completed items.
             {
                 DateTimeOffset gap = t.CreateTime;
 
                 bool withinTimeFrame;
-                switch (((ComboBoxItem)CmbQuestTf.SelectedItem)?.Content)
+                switch (((ComboBoxItem) CmbQuestTf.SelectedItem)?.Content)
                 {
                     case "Last Week":
                         withinTimeFrame = gap.AddDays(7) > DateTime.Now;
@@ -656,10 +657,10 @@ namespace GetReviews
                     default:
 
                         throw new ArgumentException();
-
                 }
 
-                bool responseOk = (!(CbQuestNoResponse.IsChecked ?? false) || ((CbQuestNoResponse.IsChecked ?? false) && t.TotalAnswerCount == 0));
+                bool responseOk = (!(CbQuestNoResponse.IsChecked ?? false) ||
+                                   ((CbQuestNoResponse.IsChecked ?? false) && t.TotalAnswerCount == 0));
 
                 e.Accepted = (withinTimeFrame && responseOk);
             }
@@ -668,12 +669,12 @@ namespace GetReviews
         private void ReviewCVS_Filter(object sender, FilterEventArgs e)
         {
             if (e.Item is DlReview t)
-            // If filter is turned on, filter completed items.
+                // If filter is turned on, filter completed items.
             {
                 DateTimeOffset gap = t.CreateTime;
 
                 bool withinTimeFrame;
-                switch (((ComboBoxItem)CmbRevTf.SelectedItem)?.Content)
+                switch (((ComboBoxItem) CmbRevTf.SelectedItem)?.Content)
                 {
                     case "Last Week":
                         withinTimeFrame = gap.AddDays(7) > DateTime.Now;
@@ -695,12 +696,13 @@ namespace GetReviews
                         break;
                     default:
                         throw new ArgumentException();
-
                 }
 
-                bool responseOk = (!(CbReviewNoResponse.IsChecked ?? false) || ((CbReviewNoResponse.IsChecked ?? false) && string.IsNullOrWhiteSpace(t.Response)));
+                bool responseOk = (!(CbReviewNoResponse.IsChecked ?? false) ||
+                                   ((CbReviewNoResponse.IsChecked ?? false) && string.IsNullOrWhiteSpace(t.Response)));
 
-                bool commentsOk = (!(CbReviewNoComment.IsChecked ?? false) || ((CbReviewNoComment.IsChecked ?? false) && !string.IsNullOrWhiteSpace(t.Comment)));
+                bool commentsOk = (!(CbReviewNoComment.IsChecked ?? false) ||
+                                   ((CbReviewNoComment.IsChecked ?? false) && !string.IsNullOrWhiteSpace(t.Comment)));
 
                 e.Accepted = (withinTimeFrame && responseOk && commentsOk);
             }
@@ -714,8 +716,7 @@ namespace GetReviews
 
         private void WebPageClick(object sender, RoutedEventArgs e)
         {
-            Hyperlink link = e.OriginalSource as Hyperlink;
-            if (link != null)
+            if (e.OriginalSource is Hyperlink link)
             {
                 Process.Start(link.NavigateUri.AbsoluteUri);
             }
@@ -727,7 +728,7 @@ namespace GetReviews
         {
             TcpListener listener = new TcpListener(IPAddress.Loopback, 0);
             listener.Start();
-            int port = ((IPEndPoint)listener.LocalEndpoint).Port;
+            int port = ((IPEndPoint) listener.LocalEndpoint).Port;
             listener.Stop();
             return port;
         }
@@ -760,8 +761,11 @@ namespace GetReviews
 
         public string AccountName => account.AccountName;
         public string LocationName => selectedLocation.StoreCode;
-        public DateTime CreateTime => DateTime.Parse( q.CreateTime.ToString());
-        public string Url => $"https://www.google.com/search?q={selectedLocation.LocationName}#lpqa=d,2"; //selectedLocation.Metadata.MapsUrl;
+        public DateTime CreateTime => DateTime.Parse(q.CreateTime.ToString());
+
+        public string Url =>
+            $"https://www.google.com/search?q={selectedLocation.LocationName}#lpqa=d,2"; //selectedLocation.Metadata.MapsUrl;
+
         public int? UpvoteCount => q.UpvoteCount;
         public string Text => q.Text;
         public int TotalAnswerCount => q.TotalAnswerCount ?? 0;
@@ -782,7 +786,9 @@ namespace GetReviews
 
         public string AccountName => account.AccountName;
         public string LocationName => selectedLocation.StoreCode;
-        public string Url => $"https://www.google.com/search?q={selectedLocation.LocationName}#lrd=0x6b911aa5170f94d5:0xd73f9db45992df32,1,,,"; //selectedLocation.Metadata.MapsUrl;
+
+        public string Url =>
+            $"https://www.google.com/search?q={selectedLocation.LocationName}#lrd=0x6b911aa5170f94d5:0xd73f9db45992df32,1,,,"; //selectedLocation.Metadata.MapsUrl;
         //public string Url => selectedLocation.Metadata.MapsUrl;
 
         // Preferred option is to the dedicated pagfe, but can't get the right Id out $"https://business.google.com/reviews/l/{selectedLocation.???}/r/{q.ReviewId}";
@@ -800,12 +806,14 @@ namespace GetReviews
             {
                 return "click";
             }
+
             return string.Empty;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter,
+            System.Globalization.CultureInfo culture)
         {
-            Uri u = new Uri((string)value??string.Empty);
+            Uri u = new Uri((string) value ?? string.Empty);
             return u;
         }
     }
