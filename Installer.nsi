@@ -46,14 +46,14 @@ Section "Install"
 
     !insertmacro CheckNetFramework 472
 
-    File "GMB-View\bin\Release\GetReviews.exe"
-    File "GMB-View\bin\Release\GetReviews.exe.config"
-    File "GMB-View\bin\Release\Newtonsoft.Json.dll"
-    File "GMB-View\bin\Release\Google.Apis.Auth.dll"
-    File "GMB-View\bin\Release\Google.Apis.Auth.PlatformServices.dll"
-    File "GMB-View\bin\Release\Google.Apis.Core.dll"
-    File "GMB-View\bin\Release\Google.Apis.dll"
-    File "GMB-View\bin\Release\Google.Apis.PlatformServices.dll"
+    File "GetReviews\bin\Release\GetReviews.exe"
+    File "GetReviews\bin\Release\GetReviews.exe.config"
+    File "GetReviews\bin\Release\Newtonsoft.Json.dll"
+    File "GetReviews\bin\Release\Google.Apis.Auth.dll"
+    File "GetReviews\bin\Release\Google.Apis.Auth.PlatformServices.dll"
+    File "GetReviews\bin\Release\Google.Apis.Core.dll"
+    File "GetReviews\bin\Release\Google.Apis.dll"
+    File "GetReviews\bin\Release\Google.Apis.PlatformServices.dll"
     
     WriteUninstaller "$INSTDIR\Uninstall.exe"
 
