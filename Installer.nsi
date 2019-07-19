@@ -14,9 +14,9 @@ BrandingText " "
 
 InstallDir "$PROGRAMFILES\GMB-View"
 
-OutFile "TVRename-${TAG}.exe"
+OutFile "GMB-View-${TAG}.exe"
 
-!define MUI_ICON "GMB-View\App\app.ico"
+!define MUI_ICON "GetReviews\logo.jpg"
 !define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\win-uninstall.ico"
 
 Var STARTMENU_FOLDER
@@ -27,7 +27,7 @@ Var STARTMENU_FOLDER
 !define MUI_ABORTWARNING
 
 !define MUI_FINISHPAGE_RUN "$INSTDIR\GMB-View.exe"
-!define MUI_FINISHPAGE_LINK "Visit the GMB-View GitHub site for the latest news and support"
+!define MUI_FINISHPAGE_LINK "Visit the GMB Summary Viewer GitHub site for the latest news and support"
 !define MUI_FINISHPAGE_LINK_LOCATION "https://github.com/MarkSummerville/GMB-Summary-Viewer"
 
 !insertmacro MUI_PAGE_WELCOME
@@ -46,22 +46,20 @@ Section "Install"
 
     !insertmacro CheckNetFramework 472
 
-    Delete "$INSTDIR\Ionic.Utils.Zip.dll" ; Remove old dependency
-
     File "GMB-View\bin\Release\GetReviews.exe"
+    File "GMB-View\bin\Release\GetReviews.exe.config"
     File "GMB-View\bin\Release\Newtonsoft.Json.dll"
     File "GMB-View\bin\Release\Google.Apis.Auth.dll"
     File "GMB-View\bin\Release\Google.Apis.Auth.PlatformServices.dll"
     File "GMB-View\bin\Release\Google.Apis.Core.dll"
     File "GMB-View\bin\Release\Google.Apis.dll"
     File "GMB-View\bin\Release\Google.Apis.PlatformServices.dll"
-    File "GMB-View\bin\Release\GetReviews.exe.config"
     
     WriteUninstaller "$INSTDIR\Uninstall.exe"
 
     !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
     CreateDirectory "$SMPROGRAMS\$STARTMENU_FOLDER"
-    CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\${APPNAME}.lnk" "$INSTDIR\GMB-View.exe"
+    CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\${APPNAME}.lnk" "$INSTDIR\GetReviews.exe"
     CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\Uninstall.lnk" "$INSTDIR\Uninstall.exe"
     !insertmacro MUI_STARTMENU_WRITE_END
 
