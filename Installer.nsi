@@ -28,16 +28,9 @@ Var STARTMENU_FOLDER
 
 !define MUI_FINISHPAGE_RUN "$INSTDIR\GMB-View.exe"
 !define MUI_FINISHPAGE_LINK "Visit the GMB-View GitHub site for the latest news and support"
-!define MUI_FINISHPAGE_LINK_LOCATION "http://www.GMB-View.com/"
-
-!define MUI_TEXT_LICENSE_TITLE "End-User License Agreement"
-!define MUI_TEXT_LICENSE_SUBTITLE "Please read the following license agreement carefully"
-!define MUI_LICENSEPAGE_TEXT_TOP "Please read the following license agreement carefully"
-!define MUI_LICENSEPAGE_BUTTON Accept
-!define MUI_LICENSEPAGE_CHECKBOX
+!define MUI_FINISHPAGE_LINK_LOCATION "https://github.com/MarkSummerville/GMB-Summary-Viewer"
 
 !insertmacro MUI_PAGE_WELCOME
-!insertmacro MUI_PAGE_LICENSE "Licence.rtf"
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_STARTMENU Application $STARTMENU_FOLDER
 !insertmacro MUI_PAGE_INSTFILES
@@ -55,9 +48,15 @@ Section "Install"
 
     Delete "$INSTDIR\Ionic.Utils.Zip.dll" ; Remove old dependency
 
-    File "GMB-View\bin\Release\TVRename.exe"
+    File "GMB-View\bin\Release\GetReviews.exe"
     File "GMB-View\bin\Release\Newtonsoft.Json.dll"
-
+    File "GMB-View\bin\Release\Google.Apis.Auth.dll"
+    File "GMB-View\bin\Release\Google.Apis.Auth.PlatformServices.dll"
+    File "GMB-View\bin\Release\Google.Apis.Core.dll"
+    File "GMB-View\bin\Release\Google.Apis.dll"
+    File "GMB-View\bin\Release\Google.Apis.PlatformServices.dll"
+    File "GMB-View\bin\Release\GetReviews.exe.config"
+    
     WriteUninstaller "$INSTDIR\Uninstall.exe"
 
     !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
@@ -81,8 +80,15 @@ Section "Install"
 SectionEnd
 
 Section "Uninstall"
-    Delete "$INSTDIR\GMB-View.exe"
+    Delete "$INSTDIR\GetReviews.exe"
+    Delete "$INSTDIR\GetReviews.exe.config"
     Delete "$INSTDIR\Newtonsoft.Json.dll"
+    
+    Delete "$INSTDIR\Google.Apis.Auth.dll"
+    Delete "$INSTDIR\Google.Apis.Auth.PlatformServices.dll"
+    Delete "$INSTDIR\Google.Apis.Core.dll"
+    Delete "$INSTDIR\Google.Apis.dll"
+    Delete "$INSTDIR\Google.Apis.PlatformServices.dll"
 
     RmDir "$INSTDIR"
 
