@@ -9,8 +9,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Net.Sockets;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,7 +16,6 @@ using System.Windows;
 using System.Windows.Media.Imaging;
 using System.Linq;
 using System.Windows.Data;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -183,7 +180,8 @@ namespace GetReviews
         private async Task<List<Review>> GetStoreReviews(MyBusinessService service, Location store)
         {
             List<Review> reviews = new List<Review>();
-            AccountsResource.LocationsResource.ReviewsResource.ListRequest selectedLocationReviews = service.Accounts.Locations.Reviews.List(store.Name);
+            AccountsResource.LocationsResource.ReviewsResource.ListRequest selectedLocationReviews =
+                service.Accounts.Locations.Reviews.List(store.Name);
             try
             {
                 ListReviewsResponse reviewResult = selectedLocationReviews.Execute();
@@ -220,7 +218,8 @@ namespace GetReviews
         private async Task<List<Question>> GetStoreQuestions(MyBusinessService service, Location store)
         {
             List<Question> questions = new List<Question>();
-            AccountsResource.LocationsResource.QuestionsResource.ListRequest selectedLocationQuestions = service.Accounts.Locations.Questions.List(store.Name);
+            AccountsResource.LocationsResource.QuestionsResource.ListRequest selectedLocationQuestions =
+                service.Accounts.Locations.Questions.List(store.Name);
             try
             {
                 try
@@ -330,7 +329,7 @@ namespace GetReviews
             return accounts;
         }
 
-        private MyBusinessService GetBusinessService(string user, ClientSecrets secrets, string name)
+        private static MyBusinessService GetBusinessService(string user, ClientSecrets secrets, string name)
         {
             UserCredential credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
                 secrets,
@@ -352,13 +351,13 @@ namespace GetReviews
         private async Task<(bool, string)> Connect(ClientSecrets secrets)
         {
             // Generates state and PKCE values.
-            string state = RandomDataBase64Url(32);
-            string codeVerifier = RandomDataBase64Url(32);
-            string codeChallenge = Base64UrlencodeNoPadding(Sha256(codeVerifier));
+            string state = Net.RandomDataBase64Url(32);
+            string codeVerifier = Net.RandomDataBase64Url(32);
+            string codeChallenge = Net.Base64UrlencodeNoPadding(Net.Sha256(codeVerifier));
             const string codeChallengeMethod = "S256";
 
             // Creates a redirect URI using an available port on the loopback address.
-            string redirectUri = $"http://{IPAddress.Loopback}:{GetRandomUnusedPort()}/";
+            string redirectUri = $"http://{IPAddress.Loopback}:{Net.GetRandomUnusedPort()}/";
             await Output("redirect URI: " + redirectUri);
 
             // Creates an HttpListener to listen for requests on that redirect URI.
@@ -576,50 +575,6 @@ namespace GetReviews
             Console.WriteLine(output);
         }
 
-
-        /// <summary>
-        /// Returns URI-safe data with a given input length.
-        /// </summary>
-        /// <param name="length">Input length (nb. output will be longer)</param>
-        /// <returns></returns>
-        private static string RandomDataBase64Url(uint length)
-        {
-            RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider();
-            byte[] bytes = new byte[length];
-            rng.GetBytes(bytes);
-            return Base64UrlencodeNoPadding(bytes);
-        }
-
-        /// <summary>
-        /// Returns the SHA256 hash of the input string.
-        /// </summary>
-        /// <param name="inputStirng"></param>
-        /// <returns></returns>
-        private static byte[] Sha256(string inputStirng)
-        {
-            byte[] bytes = Encoding.ASCII.GetBytes(inputStirng);
-            SHA256Managed sha256 = new SHA256Managed();
-            return sha256.ComputeHash(bytes);
-        }
-
-        /// <summary>
-        /// Base64url no-padding encodes the given input buffer.
-        /// </summary>
-        /// <param name="buffer"></param>
-        /// <returns></returns>
-        private static string Base64UrlencodeNoPadding(byte[] buffer)
-        {
-            string base64 = Convert.ToBase64String(buffer);
-
-            // Converts base64 to base64url.
-            base64 = base64.Replace("+", "-");
-            base64 = base64.Replace("/", "_");
-            // Strips padding.
-            base64 = base64.Replace("=", "");
-
-            return base64;
-        }
-
         private void Refilter(object sender, RoutedEventArgs e)
         {
             CollectionViewSource.GetDefaultView(GrdQuestion.ItemsSource).Refresh();
@@ -720,101 +675,6 @@ namespace GetReviews
             {
                 Process.Start(link.NavigateUri.AbsoluteUri);
             }
-        }
-
-
-        // ref http://stackoverflow.com/a/3978040
-        private static int GetRandomUnusedPort()
-        {
-            TcpListener listener = new TcpListener(IPAddress.Loopback, 0);
-            listener.Start();
-            int port = ((IPEndPoint) listener.LocalEndpoint).Port;
-            listener.Stop();
-            return port;
-        }
-    }
-
-    // Requires using System.Collections.ObjectModel;
-    public class DlQuestions : ObservableCollection<DlQuestion>
-    {
-        // Creating the Tasks collection in this way enables data binding from XAML.
-    }
-
-    // Requires using System.Collections.ObjectModel;
-    public class DlReviews : ObservableCollection<DlReview>
-    {
-        // Creating the Tasks collection in this way enables data binding from XAML.
-    }
-
-    public class DlQuestion
-    {
-        private readonly Account account;
-        private readonly Location selectedLocation;
-        private readonly Question q;
-
-        public DlQuestion(Account account, Location selectedLocation, Question q)
-        {
-            this.account = account;
-            this.selectedLocation = selectedLocation;
-            this.q = q;
-        }
-
-        public string AccountName => account.AccountName;
-        public string LocationName => selectedLocation.StoreCode;
-        public DateTime CreateTime => DateTime.Parse(q.CreateTime.ToString());
-
-        public string Url =>
-            $"https://www.google.com/search?q={selectedLocation.LocationName}#lpqa=d,2"; //selectedLocation.Metadata.MapsUrl;
-
-        public int? UpvoteCount => q.UpvoteCount;
-        public string Text => q.Text;
-        public int TotalAnswerCount => q.TotalAnswerCount ?? 0;
-    }
-
-    public class DlReview
-    {
-        private readonly Account account;
-        private readonly Location selectedLocation;
-        private readonly Review q;
-
-        public DlReview(Account account, Location selectedLocation, Review q)
-        {
-            this.account = account;
-            this.selectedLocation = selectedLocation;
-            this.q = q;
-        }
-
-        public string AccountName => account.AccountName;
-        public string LocationName => selectedLocation.StoreCode;
-
-        public string Url =>
-            $"https://www.google.com/search?q={selectedLocation.LocationName}#lrd=0x6b911aa5170f94d5:0xd73f9db45992df32,1,,,"; //selectedLocation.Metadata.MapsUrl;
-        //public string Url => selectedLocation.Metadata.MapsUrl;
-
-        // Preferred option is to the dedicated pagfe, but can't get the right Id out $"https://business.google.com/reviews/l/{selectedLocation.???}/r/{q.ReviewId}";
-        public DateTime CreateTime => DateTime.Parse(q.CreateTime.ToString());
-        public string StarRating => q.StarRating;
-        public string Comment => q.Comment;
-        public string Response => q.ReviewReply?.Comment ?? string.Empty;
-    }
-
-    class UrlConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            if (value != null && value.ToString().Length > 0)
-            {
-                return "click";
-            }
-
-            return string.Empty;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter,
-            System.Globalization.CultureInfo culture)
-        {
-            Uri u = new Uri((string) value ?? string.Empty);
-            return u;
         }
     }
 }

@@ -105,6 +105,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Helper\Net.cs" />
+    <Compile Include="Helper\DlQuestion.cs" />
+    <Compile Include="Helper\DlQuestions.cs" />
+    <Compile Include="Helper\DlReview.cs" />
+    <Compile Include="Helper\DlReviews.cs" />
+    <Compile Include="Helper\UrlConverter.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -113,7 +119,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="GMB.cs" />
+    <Compile Include="Google\GMB.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
