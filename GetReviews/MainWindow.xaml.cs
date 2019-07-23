@@ -41,19 +41,22 @@ namespace GetReviews
 
             (ConcurrentBag<DlQuestion> allQuestions, ConcurrentBag<DlReview> allReviews) = await ReloadAsync(Name,tbAccount.Text).ConfigureAwait(false);
 
-            DlQuestions questions = (DlQuestions)Resources["Questions"];
-            questions.Clear();
-            foreach (DlQuestion x in allQuestions)
+            await Dispatcher.InvokeAsync(() =>
             {
-                questions.Add(x);
-            }
+                DlQuestions questions = (DlQuestions) Resources["Questions"];
+                questions.Clear();
+                foreach (DlQuestion x in allQuestions)
+                {
+                    questions.Add(x);
+                }
 
-            DlReviews reviews = (DlReviews)Resources["Reviews"];
-            reviews.Clear();
-            foreach (DlReview x in allReviews)
-            {
-                reviews.Add(x);
-            }
+                DlReviews reviews = (DlReviews) Resources["Reviews"];
+                reviews.Clear();
+                foreach (DlReview x in allReviews)
+                {
+                    reviews.Add(x);
+                }
+            });
         }
 
         private async Task<(ConcurrentBag<DlQuestion>, ConcurrentBag<DlReview>)> ReloadAsync(string appName,string username)
