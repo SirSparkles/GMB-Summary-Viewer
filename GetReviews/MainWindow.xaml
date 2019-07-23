@@ -22,16 +22,15 @@
         <TabControl Grid.ColumnSpan="1">
             <TabItem Header="Operation">
                 <Grid Background="#FFE5E5E5">
-                    <Button Content="Login" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click"/>
-                    <ListBox x:Name="LbAccounts" HorizontalAlignment="Left" Margin="214,35,0,10" Width="189"/>
+                    <Button Content="Login" HorizontalAlignment="Left" Margin="97,94,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click"/>
+                    <ListBox x:Name="LbAccounts" HorizontalAlignment="Left" Margin="264,35,0,10" Width="139"/>
                     <ListBox x:Name="LbStores" HorizontalAlignment="Left" Margin="408,35,0,10" Width="277"/>
                     <TextBox x:Name="TxtUpdates" Margin="690,35,0,10" TextWrapping="Wrap" Text="" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
-                    <Label x:Name="LblUserName" Content="&lt;Not Connected&gt;" HorizontalAlignment="Left" Margin="10,35,0,0" VerticalAlignment="Top" Width="199"/>
-                    <Image HorizontalAlignment="Left" Height="100" Margin="31,90,0,0" VerticalAlignment="Top" Width="100"/>
-                    <Image x:Name="ImgProfilePic" Height="100" Margin="10,66,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="199"/>
-                    <Label Content="Accounts Loaded:" HorizontalAlignment="Left" Margin="214,10,0,0" VerticalAlignment="Top" Width="189" Height="25"/>
+                    <Label Content="Accounts Loaded:" HorizontalAlignment="Left" Margin="264,10,0,0" VerticalAlignment="Top" Width="139" Height="25"/>
                     <Label Content="Stores Loaded:" HorizontalAlignment="Left" Margin="408,12,0,0" VerticalAlignment="Top" Width="277" Height="25"/>
                     <Label Content="Issues:" HorizontalAlignment="Left" Margin="690,10,0,0" VerticalAlignment="Top" Width="179" Height="25"/>
+                    <TextBox x:Name="tbAccount" HorizontalAlignment="Left" Height="23" Margin="10,66,0,0" TextWrapping="Wrap" Text="cash.converters.mcc@gmail.com" VerticalAlignment="Top" Width="249" />
+                    <Label Content="Email Address" HorizontalAlignment="Left" Margin="88,35,0,0" VerticalAlignment="Top" Width="97" RenderTransformOrigin="0.526,-0.346"/>
                 </Grid>
             </TabItem>
             <TabItem Header="Questions">

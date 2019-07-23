@@ -105,7 +105,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Helper\Net.cs" />
     <Compile Include="Helper\DlQuestion.cs" />
     <Compile Include="Helper\DlQuestions.cs" />
     <Compile Include="Helper\DlReview.cs" />
